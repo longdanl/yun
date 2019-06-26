@@ -59,6 +59,21 @@ const actions = {
       })
     })
   },
+  getInfo({ commit, state }) {
+    return new Promise((resolve, reject) => {
+      userDetail(state.token).then(response => {
+        const roles =  response.permissions
+        // roles must be a non-empty array
+        if (!roles || roles.length <= 0) {
+          reject('失败')
+        }
+        commit('SET_ROLES', roles);
+        resolve(response)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
   // 登出
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {

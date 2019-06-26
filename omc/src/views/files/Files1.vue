@@ -2,8 +2,8 @@
 	<section>
 		<!--工具条-->
 		<el-form :inline="true" :model="filters" style="margin-top: 10px">
-			<el-button @click="handleAdd"><i class="fa fa-cloud-upload">上传文件</i></el-button>
-			<el-button type="danger" @click="deleteFilesBatch" :disabled="this.sels.length===0">批量删除</el-button>
+			<el-button @click="handleAdd" :disabled="filesDisable"><i class="fa fa-cloud-upload">上传文件</i></el-button>
+			<el-button type="danger" @click="deleteFilesBatch" :disabled="this.sels.length===0||filesDisable">批量删除</el-button>
 			<el-form-item class="btn" style="float:right;margin-right:30px">
 				<el-button size="mini"><i class="fa fa-refresh" aria-hidden="true" @click="refresh"></i></el-button>
 			</el-form-item>
@@ -14,7 +14,7 @@
 		<!--文件列表-->
 		<div style="padding-top: 10px"></div>
 		<el-table @sort-change='tableSortChange' @selection-change="selsChange" border stripe ref="singleTable" :data="files" element-loading-text="拼命加载中..." v-loading="fileLoading" style="width:1141px;" :body="true">
-			<el-table-column :selectable='checkboxT'  type="selection" width="52">
+			<el-table-column :selectable='checkboxT' type="selection" width="52">
 			</el-table-column>
 			<el-table-column prop="memo" label="备注" :show-overflow-tooltip="true" width="120" sortable='custom'>
 			</el-table-column>
@@ -48,8 +48,8 @@
 			</el-table-column>
 			<el-table-column label="操作" width=140 class="showBtn" prop="is_default">
 				<template scope="scope">
-					<el-button size="small" type="primary" @click="handleEditMemo(scope.$index, scope.row)">编辑</el-button>
-					<el-button type="danger" size="small" :disabled="scope.row.is_default==1||scope.row.calling_numbers!=''" @click="deleteFile(scope.$index, scope.row)">删除</el-button>
+					<el-button size="small" type="primary" :disabled="filesDisable" @click="handleEditMemo(scope.$index, scope.row)">编辑</el-button>
+					<el-button type="danger" size="small" :disabled="scope.row.is_default==1||scope.row.calling_numbers!=''||filesDisable" @click="deleteFile(scope.$index, scope.row)">删除</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -119,6 +119,7 @@ import { deleteFilesBatch,upload,editMemo,deleteFile,getFiles,getFileByMemo,sort
 export default {
 	data() {
 		return {
+			filesDisable:false,
 			filters: {
 				memo:''
 			},
@@ -161,6 +162,9 @@ export default {
 	},
 	created() {
 		this.getFiles();
+		let per1 = JSON.parse(sessionStorage.getItem('per'));
+		per1 = per1.toString()
+		this.filesDisable = per1.indexOf("crbt_10086:write")!=-1?false:true;
 	},
 	methods: {
         stpoPlay(){
@@ -333,10 +337,14 @@ export default {
 			})
 		},
 		checkboxT(row, rowIndex){
-			if(row.is_default==1||row.calling_numbers!=""){
-				return false;//禁用
+        	if(this.filesDisable){
+				return false;
 			}else{
-				return true;//不禁用
+				if(row.is_default==1||row.calling_numbers!=""){
+					return false;//禁用
+				}else{
+					return true;//不禁用
+				}
 			}
 		},
 		selsChange: function (sels) {

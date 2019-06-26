@@ -59,16 +59,16 @@
           this.$store.dispatch('user/login', this.ruleForm2)
               .then( async (response) => {
                 if(response.code==0){
+                  await userDetail(getToken()).then((res) => {
+                    let per = res.permissions;
+                    sessionStorage.setItem('per', JSON.stringify(per));
+                    //this.$router.go(0);
+                    this.$router.replace('/main')
+                  });
                   this.logining = false;
                   this.$message({
                     message: '登录成功',
                     type: 'success'
-                  });
-                  await userDetail(getToken()).then((res) => {
-                    let per = res.permissions;
-                    sessionStorage.setItem('per', JSON.stringify(per));
-                    this.$router.go(0);
-                    this.$router.replace('/main')
                   });
                 }else{
                   this.logining = false;

@@ -12,6 +12,7 @@ const getters = {
   roles: state => state.user.roles,
   crbtfile: state => state.crbtfile,
   filename: state => state.filename,
+  routers: state => state.routers,
   permission_routes: state => state.permission.routes,
   errorLogs: state => state.errorLog.logs
 }

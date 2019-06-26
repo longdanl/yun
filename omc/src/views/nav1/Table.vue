@@ -3,9 +3,9 @@
 		<!--工具条-->
 		<el-form :inline="true" :model="filters" style="margin-top: 10px">
 			<el-form-item>
-				<el-button type="primary" @click="handleAdd">新增用户</el-button>
+				<el-button type="primary" @click="handleAdd" :disabled="usersDisable">新增用户</el-button>
 			</el-form-item>
-			<el-button type="danger" @click="deleteUsersBatch" :disabled="this.sels.length===0">批量删除</el-button>
+			<el-button type="danger" @click="deleteUsersBatch" :disabled="this.sels.length===0||usersDisable">批量删除</el-button>
 			<el-form-item class="btn" style="float:right;margin-right:30px">
 				<el-button size="mini"><i class="fa fa-refresh" aria-hidden="true" @click="refresh"></i></el-button>
 			</el-form-item>
@@ -30,8 +30,8 @@
 				</el-table-column>
 				<el-table-column label="操作" width=144 class="showBtn">
 					<template scope="scope">
-						<el-button size="small" type="primary" :disabled="scope.row.username == name" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-						<el-button type="danger" size="small" :disabled="scope.row.username == name" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+						<el-button size="small" type="primary" :disabled="scope.row.username == name||usersDisable" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+						<el-button type="danger" size="small" :disabled="scope.row.username == name||usersDisable" @click="handleDel(scope.$index, scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -115,6 +115,7 @@ import {sortBy,getUsersByName, getUsers, addUsers, deleteUsers, updateUsers, get
 export default {
 	data() {
 		return {
+			usersDisable:false,
 			filters: {
 				username: ''
 			},
@@ -177,6 +178,9 @@ export default {
 		let name1 = JSON.parse(sessionStorage.getItem('user'))
 		this.name = name1.username;
 		console.log(this.name)
+		let per1 = JSON.parse(sessionStorage.getItem('per'));
+		per1 = per1.toString()
+		this.usersDisable = per1.indexOf("user:write")!=-1?false:true;
 		this.getUsers();
 		this.getRoles();
 	},
@@ -216,10 +220,14 @@ export default {
 			});
 		},
 		checkboxL(row, rowIndex){
-			if(row.username==this.name){
-				return false;//禁用
+			if(this.usersDisable){
+				return false;
 			}else{
-				return true;//不禁用
+				if (row.username == this.name) {
+					return false;//禁用
+				} else {
+					return true;//不禁用
+				}
 			}
 		},
 		formatActive: function (row) {

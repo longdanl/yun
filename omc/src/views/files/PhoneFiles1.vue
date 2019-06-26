@@ -3,9 +3,9 @@
 		<!--工具条-->
 		<el-form :inline="true" :model="filters" style="margin-top: 10px">
 			<el-form-item>
-				<el-button type="primary" @click="handleAddPhone">新增</el-button>
+				<el-button type="primary" @click="handleAddPhone" :disabled="phoneFilesDis">新增</el-button>
 			</el-form-item>
-			<el-button type="danger" @click="deletePhoneBatch" :disabled="this.sels.length===0">批量删除</el-button>
+			<el-button type="danger" @click="deletePhoneBatch" :disabled="this.sels.length===0||phoneFilesDis">批量删除</el-button>
 			<el-form-item class="btn" style="float:right;margin-right:30px">
 				<el-button size="mini"><i class="fa fa-refresh" aria-hidden="true" @click="refresh"></i></el-button>
 			</el-form-item>
@@ -30,8 +30,8 @@
 			</el-table-column>
 			<el-table-column label="操作" width=143 class="showBtn" prop="is_default">
 				<template scope="scope">
-					<el-button size="small" type="primary" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-					<el-button type="danger" size="small" :disabled="scope.row.is_default==1" @click="deletePhone(scope.$index, scope.row)">删除</el-button>
+					<el-button size="small" type="primary"  :disabled="phoneFilesDis" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+					<el-button type="danger" size="small" :disabled="scope.row.is_default==1||phoneFilesDis" @click="deletePhone(scope.$index, scope.row)">删除</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -90,6 +90,7 @@ import {sortByPhone,updatePhone,deletePhone,deletePhoneBatch,getFile,addPhone,ge
 export default {
 	data() {
 		return {
+			phoneFilesDis:false,
 			filters: {
 				calling_number: ''
 			},
@@ -128,6 +129,9 @@ export default {
 		}
 	},
 	created() {
+		let per1 = JSON.parse(sessionStorage.getItem('per'));
+		per1 = per1.toString()
+		this.phoneFilesDis = per1.indexOf("crbt_10086:write")!=-1?false:true;
 		this.getPhoneList();
 		this.getVideoFile();
 		this.getMusicFile();
@@ -160,10 +164,14 @@ export default {
             });
         },
 		checkboxT(row, rowIndex){
-			if(row.is_default==1){
-				return false;//禁用
+			if(this.phoneFilesDis){
+				return false;
 			}else{
-				return true;//不禁用
+				if(row.is_default==1){
+					return false;//禁用
+				}else{
+					return true;//不禁用
+				}
 			}
 		},
 		formatActive: function (row) {

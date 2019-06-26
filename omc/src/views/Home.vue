@@ -35,7 +35,7 @@
 			<aside :class="{showSidebar:!collapsed}">
 				<!--导航菜单-->
 				<el-menu :default-active="$route.path" router :collapse="collapsed" unique-opened>
-					<template v-for="(item,index) in $router.options.routes" v-if="item.menuShow">
+					<template v-for="(item,index) in router" v-if="item.menuShow">
 						<el-submenu v-if="!item.leaf" :index="index+''" >
 							<template slot="title"><i :class="item.iconCls" style="color:rgb(135,141,153)"></i><span slot="title">{{item.name}}</span></template>
 							<el-menu-item v-for="term in item.children" :key="term.path" :index="term.path" v-if="term.menuShow"
@@ -119,11 +119,12 @@ export default {
 		bus.$on('setNickName', (text) => {
 			this.nickname = text;
 		});
-		this.userdetail();
-		let p =JSON.stringify(sessionStorage.getItem("per"));
+		this.router = JSON.parse(sessionStorage.getItem("router"))
+
 	},
 	data () {
 		return {
+			router:[],
 			username: '',
 			collapsed: false,
 			sysName:'后台管理系统',
@@ -169,13 +170,6 @@ export default {
 		collapse: function () {
 			this.collapsed = !this.collapsed;
 		},
-		userdetail(){
-			userDetail(getToken()).then((res) => {
-				let per = res.permissions;
-				sessionStorage.setItem('per', JSON.stringify(per));
-				console.log(res)
-			})
-		},
 		setting(){
 			this.userFormVisible=true;
 			let user = JSON.parse(sessionStorage.getItem('user'));
@@ -184,14 +178,17 @@ export default {
 		settingUser(){
 			settingUser(this.settingForm).then((res)=>{
 				if(res.code==0){
-					this.$message({
-						message:"修改成功",
-						type:'success'
-					});
 					this.userFormVisible=false;
-					this.username = res.username;
-					console.log(res)
 					this.$refs['settingForm'].resetFields();
+					let that = this
+					setTimeout(function(){
+						that.$router.replace("/login");
+						that.$message({
+							message:"登录失效，请重新登录！",
+							type:'error'
+						});
+					},500)
+					sessionStorage.removeItem('router');
 				}else{
 					this.$message({
 						message:res.description,
@@ -244,6 +241,7 @@ export default {
 								type:'success'
 							});
 							this.$router.replace("/login");
+							sessionStorage.removeItem('router');
 						})
 						.catch((error) => {
 							this.loading = false;
